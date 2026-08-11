@@ -1,6 +1,8 @@
 package com.wkr.user.controller;
 
-import com.wkr.common.result.Result;
+import com.wkr.apiuser.dto.PasswordVerifyDTO;
+import com.wkr.apiuser.dto.UserDTO;
+import com.wkr.core.result.Result;
 import com.wkr.user.dto.UserCreateDTO;
 import com.wkr.user.dto.UserUpdateDTO;
 import com.wkr.user.entity.UserInfo;
@@ -9,6 +11,7 @@ import com.wkr.user.vo.UserVO;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +22,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     @GetMapping("/{id}")
     public Result<UserVO> detail(@PathVariable("id") Long id){
@@ -57,5 +62,25 @@ public class UserController {
     ){
         userService.delete(id);
         return Result.success(null);
+    }
+
+    // 密码验证接口
+    @PostMapping("/verify-password")
+    public Boolean verifyPassword(@RequestBody PasswordVerifyDTO verifyDTO) {
+        UserInfo user = userService.getByUsername(verifyDTO.getUsername());
+        if (user == null) {
+            return false;
+        }
+        return passwordEncoder.matches(verifyDTO.getRawPassword(), user.getPassword());
+    }
+
+    private UserDTO convertToDTO(UserInfo user) {
+        if (user == null) return null;
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setStatus(user.getStatus());
+        return dto;
     }
 }

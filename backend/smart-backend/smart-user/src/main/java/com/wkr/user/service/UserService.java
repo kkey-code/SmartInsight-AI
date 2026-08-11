@@ -33,4 +33,7 @@ public interface UserService {
 
     void delete(Long id);
 
+//    UserInfo ById(Long userId);
+
+    Boolean verifyPassword(String username, String rawPassword);
 }

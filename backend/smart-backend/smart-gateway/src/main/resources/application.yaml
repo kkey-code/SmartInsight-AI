@@ -8,11 +8,44 @@ spring:
       discovery:
         server-addr: localhost:8848
     gateway:
+      # 开启网关日志（调试用）
+      httpclient:
+        connect-timeout: 1000
+        response-timeout: 5s
       routes:
-        - id: user-service
+        # 用户服务路由
+        - id: smart-user
           uri: lb://smart-user
-
           predicates:
-            - Path=/api/user/**
-          filters:
-            - StripPrefix=1
+            - Path=/user/**
+        # 认证服务路由
+        - id: smart-auth
+          uri: lb://smart-auth
+          predicates:
+            - Path=/auth/**
+        # AI 服务路由
+        - id: smart-ai
+          uri: lb://smart-ai
+          predicates:
+            - Path=/ai/**
+        # 文档服务路由
+        - id: smart-document
+          uri: lb://smart-document
+          predicates:
+            - Path=/document/**
+# ✅ management 和 spring 平级
+management:
+  endpoints:
+    web:
+      exposure:
+        include: gateway, health, info  # 添加 health 和 info
+  endpoint:
+    gateway:
+      enabled: true  # 开启网关端点
+    health:
+      show-details: always
+# 日志配置（可选）
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.alibaba.nacos: WARN

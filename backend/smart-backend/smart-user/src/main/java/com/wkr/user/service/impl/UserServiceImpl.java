@@ -3,8 +3,7 @@ package com.wkr.user.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.wkr.common.exception.BusinessException;
-import com.wkr.common.util.PasswordUtil;
+import com.wkr.core.exception.BusinessException;
 import com.wkr.user.dto.UserCreateDTO;
 import com.wkr.user.dto.UserPageDTO;
 import com.wkr.user.dto.UserUpdateDTO;
@@ -13,9 +12,6 @@ import com.wkr.user.mapper.UserMapper;
 import com.wkr.user.service.UserService;
 import com.wkr.user.vo.UserPageVO;
 import com.wkr.user.vo.UserVO;
-import jakarta.annotation.Resource;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -137,6 +133,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserInfo>implements
         user.setDeleted(1);
 
         updateById(user);
+    }
+
+    @Override
+    public Boolean verifyPassword(String username, String rawPassword) {
+        UserInfo user = getByUsername(username);
+
+        if (user == null) {
+            return false;
+        }
+
+        return passwordEncoder.matches(
+                rawPassword,
+                user.getPassword()
+        );
     }
 
     private UserVO convertVO(UserInfo user){

@@ -12,15 +12,14 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>smart-common</artifactId>
+    <artifactId>smart-api</artifactId>
     <packaging>pom</packaging>
-    <name>smart-common</name>
+    <name>smart-api</name>
+    <description>API 模块聚合父模块</description>
 
-    <!-- 子模块 -->
     <modules>
-        <module>smart-common-core</module>
-        <module>smart-common-web</module>
-        <module>smart-common-db</module>
+        <module>smart-api-user</module>
+        <module>smart-api-auth</module>
     </modules>
 
 </project>

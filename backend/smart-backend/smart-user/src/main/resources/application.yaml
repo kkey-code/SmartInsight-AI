@@ -6,6 +6,11 @@ spring:
     url: jdbc:mysql://localhost:3306/smart_insight?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: root
     password: 12345678
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        ip: 127.0.0.1
 
 mybatis-plus:
   configuration:
@@ -16,8 +21,3 @@ mybatis-plus:
 
 server:
   port: 8081
-  cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:8848
-        ip: 127.0.0.1
