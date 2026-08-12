@@ -6,20 +6,19 @@ import com.wkr.apiuser.feign.UserFeignClient;
 import com.wkr.auth.dto.LoginDTO;
 import com.wkr.auth.service.AuthService;
 import com.wkr.auth.vo.LoginVO;
+import com.wkr.core.exception.BusinessException;
 import com.wkr.core.result.Result;
 import com.wkr.core.util.JwtUtil;
 import jakarta.annotation.Resource;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
 
     @Resource
     private UserFeignClient userFeignClient;
-
-    @Resource
-    private BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public LoginVO login(LoginDTO dto) {
@@ -36,11 +35,11 @@ public class AuthServiceImpl implements AuthService {
         verifyDTO.setUsername(dto.getUsername());
         verifyDTO.setRawPassword(dto.getPassword());
 
-        Result<Boolean> result =
-                userFeignClient.verifyPassword(verifyDTO);
+        Result<Boolean> result = userFeignClient.verifyPassword(verifyDTO);
 
-        if (result == null || !Boolean.TRUE.equals(result.getData())) {
-            throw new RuntimeException("密码错误");
+        if (result == null || !result.getData()) {
+            log.warn("密码错误，用户名：{}", dto.getUsername());
+            throw new BusinessException(401, "用户名或密码错误");
         }
 
         //  生成 Token

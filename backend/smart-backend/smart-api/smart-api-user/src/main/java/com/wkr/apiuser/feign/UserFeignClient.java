@@ -18,6 +18,6 @@ public interface UserFeignClient {
     @GetMapping("/inner/user/id/{userId}")
     UserDTO getById(@PathVariable("userId") Long userId);
 
-    @PostMapping("/user/verify-password")
-    Boolean verifyPassword(@RequestBody PasswordVerifyDTO dto);
+    @PostMapping("/inner/user/verify-password")
+    Result<Boolean> verifyPassword(@RequestBody PasswordVerifyDTO dto);
 }

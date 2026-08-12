@@ -50,12 +50,12 @@ public class JwtUtil {
     /**
      * 验证 JWT 是否有效
      */
-    public static boolean validate(String token) {
-        try {
-            parse(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+//    public static boolean validate(String token) {
+//        try {
+//            parse(token);
+//            return true;
+//        } catch (Exception e) {
+//            return false;
+//        }
+//    }
 }

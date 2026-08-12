@@ -2,13 +2,16 @@ package com.wkr.user.controller;
 
 import com.wkr.apiuser.dto.PasswordVerifyDTO;
 import com.wkr.apiuser.dto.UserDTO;
+import com.wkr.core.result.Result;
 import com.wkr.user.entity.UserInfo;
 import com.wkr.user.service.UserService;
 import com.wkr.user.vo.UserVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/inner/user")
 @RequiredArgsConstructor
@@ -35,13 +38,16 @@ public class InnerController {
     }
 
     @PostMapping("/verify-password")
-    public Boolean verifyPassword(
+    public Result<Boolean> verifyPassword(
             @RequestBody PasswordVerifyDTO dto
     ) {
-        return userService.verifyPassword(
-                dto.getUsername(),
-                dto.getRawPassword()
-        );
+        try {
+            Boolean b = userService.verifyPassword(dto.getUsername(), dto.getRawPassword());
+            log.info("result：{}", b);
+            return Result.success(b);
+        } catch (Exception e) {
+            return Result.error(500,"验证失败：" + e.getMessage());
+        }
     }
 
     private UserDTO convertToDTO(UserInfo userInfo) {
