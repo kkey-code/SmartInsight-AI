@@ -2,68 +2,128 @@ package com.wkr.gateway.filter;
 
 import com.wkr.core.util.JwtUtil;
 import io.jsonwebtoken.Claims;
-import org.springframework.cloud.gateway.filter.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+import java.util.List;
+
+@Slf4j
 @Component
 public class JwtGlobalFilter implements GlobalFilter, Ordered {
+
+    private static final String USER_ID_HEADER = "X-User-Id";
+    private static final String USERNAME_HEADER = "X-Username";
+    private static final String USER_ROLES_HEADER = "X-User-Roles";
 
     @Override
     public Mono<Void> filter(
             ServerWebExchange exchange,
             GatewayFilterChain chain
-    ){
-        String path =
-                exchange.getRequest()
-                        .getURI()
-                        .getPath();
+    ) {
+
+        String path = exchange.getRequest()
+                .getURI()
+                .getPath();
+
         // 登录接口放行
-        if(path.startsWith("/auth/login")){
+        if ("/auth/login".equals(path)) {
             return chain.filter(exchange);
         }
-        String token =
-                exchange.getRequest()
-                        .getHeaders()
-                        .getFirst("Authorization");
+        // 获取 JWT 令牌
+        String authorization = exchange.getRequest()
+                .getHeaders()
+                .getFirst(HttpHeaders.AUTHORIZATION);
 
-        System.out.println("TOKEN=" + token);
-
-        if(token == null ||
-                !token.startsWith("Bearer ")){
+        if (authorization == null
+                || !authorization.startsWith("Bearer ")) {
             return unauthorized(exchange);
         }
-
+        // 解析 JWT
         try {
-            token = token.substring(7);
+            String token = authorization.substring(7);
+
             Claims claims = JwtUtil.parse(token);
-            exchange.getAttributes()
-                    .put(
-                            "userId",
-                            claims.get("userId")
-                    );
-        }catch(Exception e){
+
+            Object userId = claims.get("userId");
+            String username = claims.getSubject();
+
+            List<String> roles = claims.get("roles", List.class);
+
+            if (roles == null) {
+                roles = Collections.emptyList();
+            }
+            if (userId == null || username == null) {
+                return unauthorized(exchange);
+            }
+
+            // 保存到 Gateway 当前请求上下文
+            exchange.getAttributes().put("userId", userId);
+            exchange.getAttributes().put("username", username);
+            exchange.getAttributes().put("roles", roles);
+
+            /*
+             * 防止客户端伪造身份 Header。
+             *
+             * 先删除客户端传入的身份信息，
+             * 再由 Gateway 根据 JWT 重新写入。
+             */
+            List<String> finalRoles = roles;
+            ServerWebExchange mutatedExchange =
+                exchange.mutate()
+                    .request(request ->
+                            request.headers(headers -> {
+
+                        // 1. 先删除客户端传来的身份信息（防止伪造）
+                        headers.remove(USER_ID_HEADER);
+                        headers.remove(USERNAME_HEADER);
+                        headers.remove(USER_ROLES_HEADER);
+                        // 2. 重新写入从 JWT 解析出的身份信息
+                        headers.add(
+                                USER_ID_HEADER,
+                                String.valueOf(userId)
+                        );
+
+                        headers.add(
+                                USERNAME_HEADER,
+                                username
+                        );
+
+                        if (!finalRoles.isEmpty()) {
+                            headers.add(
+                                    USER_ROLES_HEADER,
+                                    String.join(",", finalRoles)
+                            );
+                        }
+                    }))
+                    .build();
+
+            return chain.filter(mutatedExchange);
+
+        } catch (Exception e) {
+            log.warn("JWT validation failed", e);
             return unauthorized(exchange);
         }
-        return chain.filter(exchange);
     }
 
     private Mono<Void> unauthorized(
             ServerWebExchange exchange
-    ){
+    ) {
         exchange.getResponse()
-                .setStatusCode(
-                        HttpStatus.UNAUTHORIZED
-                );
-        return exchange.getResponse()
-                .setComplete();
+                .setStatusCode(HttpStatus.UNAUTHORIZED);
+
+        return exchange.getResponse().setComplete();
     }
 
     @Override
-    public int getOrder(){
+    public int getOrder() {
         return -100;
     }
 }

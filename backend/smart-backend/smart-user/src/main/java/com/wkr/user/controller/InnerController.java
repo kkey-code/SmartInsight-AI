@@ -1,15 +1,20 @@
 package com.wkr.user.controller;
 
 import com.wkr.apiuser.dto.PasswordVerifyDTO;
+import com.wkr.apiuser.dto.RoleDTO;
 import com.wkr.apiuser.dto.UserDTO;
 import com.wkr.core.result.Result;
+import com.wkr.user.entity.Role;
 import com.wkr.user.entity.UserInfo;
+import com.wkr.user.service.RoleService;
 import com.wkr.user.service.UserService;
 import com.wkr.user.vo.UserVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -18,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 public class InnerController {
 
     private final UserService userService;
+
+    private final RoleService roleService;
 
     @GetMapping("/{username}")
     public UserDTO getByUsername(
@@ -48,6 +55,22 @@ public class InnerController {
         } catch (Exception e) {
             return Result.error(500,"验证失败：" + e.getMessage());
         }
+    }
+
+    @GetMapping("/roles/{userId}")
+    public List<RoleDTO> getUserRoles(@PathVariable("userId") Long userId) {
+
+        log.info("=== getUserRoles 被调用，userId: {} ===", userId);  // ← 加这行
+
+        return roleService.getRolesByUserId(userId)
+                .stream()
+                .map(role -> {
+                    RoleDTO dto = new RoleDTO();
+                    dto.setId(role.getId());
+                    dto.setRoleName(role.getRoleName());
+                    return dto;
+                })
+                .toList();
     }
 
     private UserDTO convertToDTO(UserInfo userInfo) {

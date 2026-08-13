@@ -1,6 +1,7 @@
 package com.wkr.auth.service.impl;
 
 import com.wkr.apiuser.dto.PasswordVerifyDTO;
+import com.wkr.apiuser.dto.RoleDTO;
 import com.wkr.apiuser.dto.UserDTO;
 import com.wkr.apiuser.feign.UserFeignClient;
 import com.wkr.auth.dto.LoginDTO;
@@ -13,6 +14,8 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -23,7 +26,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginVO login(LoginDTO dto) {
 
-        //  返回的是 UserDTO，不是 Entity
         UserDTO user = userFeignClient.getByUsername(dto.getUsername());
 
         if (user == null) {
@@ -35,21 +37,31 @@ public class AuthServiceImpl implements AuthService {
         verifyDTO.setUsername(dto.getUsername());
         verifyDTO.setRawPassword(dto.getPassword());
 
-        Result<Boolean> result = userFeignClient.verifyPassword(verifyDTO);
+        Result<Boolean> result
+                = userFeignClient.verifyPassword(verifyDTO);
 
         if (result == null || !result.getData()) {
-            log.warn("密码错误，用户名：{}", dto.getUsername());
             throw new BusinessException(401, "用户名或密码错误");
         }
 
+        List<RoleDTO> roles
+                = userFeignClient.getUserRoles(user.getId());
+
+        if (roles == null || roles.isEmpty()) {
+            throw new BusinessException(401, "角色信息錯誤，親聯係管理員");
+        }
+
+        List<String> roleNames = roles.stream()
+                .map(RoleDTO::getRoleName)
+                .toList();
         //  生成 Token
-        String token = JwtUtil.createToken(user.getId(), user.getUsername());
+        String token = JwtUtil.createToken(user.getId(), user.getUsername(), roleNames);
 
         LoginVO vo = new LoginVO();
         vo.setToken(token);
         vo.setUserId(user.getId());
         vo.setUsername(user.getUsername());
-
+        vo.setRoles(roles);
         return vo;
     }
 }

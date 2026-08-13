@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 
 public class JwtUtil {
 
@@ -20,19 +21,25 @@ public class JwtUtil {
      * 获取密钥对象
      */
     private static SecretKey getKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(
+                    SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
     /**
      * 生成 JWT
      */
-    public static String createToken(Long userId, String username) {
+    public static String createToken(
+            Long userId,
+            String username,
+            List<String> roles
+    ) {
         return Jwts.builder()
-                .subject(username)                    // 用 subject 替代 setSubject
+                .subject(username)
                 .claim("userId", userId)
-                .issuedAt(new Date())                 // 用 issuedAt 替代 setIssuedAt
-                .expiration(new Date(System.currentTimeMillis() + EXPIRE)) // 用 expiration 替代 setExpiration
-                .signWith(getKey())                   // 传入 SecretKey 对象
+                .claim("roles", roles)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + EXPIRE))
+                .signWith(getKey())
                 .compact();
     }
 

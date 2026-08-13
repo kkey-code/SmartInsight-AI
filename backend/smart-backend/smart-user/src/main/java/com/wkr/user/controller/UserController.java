@@ -1,7 +1,8 @@
 package com.wkr.user.controller;
 
-import com.wkr.apiuser.dto.UserDTO;
 import com.wkr.core.result.Result;
+import com.wkr.user.annotation.RequireRole;
+import com.wkr.user.context.UserContext;
 import com.wkr.user.dto.UserCreateDTO;
 import com.wkr.user.dto.UserUpdateDTO;
 import com.wkr.user.entity.UserInfo;
@@ -12,6 +13,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/user")
@@ -24,7 +27,9 @@ public class UserController {
     @GetMapping("/{id}")
     public Result<UserVO> detail(@PathVariable("id") Long id){
 
+
         UserVO userById = userService.getUserById(id);
+        System.out.println(userById);
         return Result.success(userById);
     }
 
@@ -38,25 +43,41 @@ public class UserController {
         return Result.success(userVO);
     }
 
+    @RequireRole("ADMIN")
     @PostMapping
-    public Result<Long> create(@RequestBody UserCreateDTO dto){
+    public Result<Long> create(@RequestBody UserCreateDTO dto) {
 
         Long id = userService.createUser(dto);
         return Result.success(id);
     }
 
+    @RequireRole("ADMIN")
     @PutMapping
-    public Result<Void> update(@RequestBody @Valid UserUpdateDTO dto){
+    public Result<Void> update(@RequestBody @Valid UserUpdateDTO dto) {
 
         userService.update(dto);
         return Result.success(null);
     }
 
+    @RequireRole("ADMIN")
     @DeleteMapping("/{id}")
-    public Result<Void> delete(
-            @PathVariable Long id
-    ){
+    public Result<Void> delete(@PathVariable Long id) {
+
         userService.delete(id);
         return Result.success(null);
+    }
+
+    @GetMapping("/current")
+    public Result<String> current() {
+
+        Long userId = UserContext.getUserId();
+        String username = UserContext.getUsername();
+        List<String> roles = UserContext.getRoles();
+
+        return Result.success(
+                "userId=" + userId
+                        + ", username=" + username
+                        + ", roles=" + String.join(",", roles)
+        );
     }
 }

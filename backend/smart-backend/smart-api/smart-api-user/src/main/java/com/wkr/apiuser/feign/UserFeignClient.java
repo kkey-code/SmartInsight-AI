@@ -1,15 +1,17 @@
 package com.wkr.apiuser.feign;
 
+import com.wkr.apiuser.config.FeignInternalAuthConfig;
 import com.wkr.apiuser.dto.PasswordVerifyDTO;
+import com.wkr.apiuser.dto.RoleDTO;
 import com.wkr.apiuser.dto.UserDTO;
 import com.wkr.core.result.Result;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "smart-user")
+import java.util.List;
+
+@FeignClient(name = "smart-user"
+        ,configuration = FeignInternalAuthConfig.class)
 public interface UserFeignClient {
 
     @GetMapping("/inner/user/{username}")
@@ -20,4 +22,7 @@ public interface UserFeignClient {
 
     @PostMapping("/inner/user/verify-password")
     Result<Boolean> verifyPassword(@RequestBody PasswordVerifyDTO dto);
+
+    @GetMapping("/inner/user/roles/{userId}")
+    List<RoleDTO> getUserRoles(@PathVariable("userId") Long userId);
 }

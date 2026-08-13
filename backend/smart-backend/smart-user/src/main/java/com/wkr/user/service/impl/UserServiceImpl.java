@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wkr.core.exception.BusinessException;
+import com.wkr.user.context.UserContext;
 import com.wkr.user.dto.UserCreateDTO;
 import com.wkr.user.dto.UserPageDTO;
 import com.wkr.user.dto.UserUpdateDTO;
@@ -123,15 +124,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserInfo>implements
     @Override
     public void delete(Long id) {
 
+        if (!UserContext.isAdmin()) {
+            throw new BusinessException(
+                    403,
+                    "无权删除用户"
+            );
+        }
         UserInfo user = getById(id);
 
         if (user == null) {
             throw new RuntimeException("用户不存在");
         }
-
         // 逻辑删除
         user.setDeleted(1);
-
         updateById(user);
     }
 
