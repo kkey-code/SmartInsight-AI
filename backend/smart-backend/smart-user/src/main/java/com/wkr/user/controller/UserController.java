@@ -4,9 +4,11 @@ import com.wkr.core.result.Result;
 import com.wkr.user.annotation.RequireRole;
 import com.wkr.user.context.UserContext;
 import com.wkr.user.dto.UserCreateDTO;
+import com.wkr.user.dto.UserPageDTO;
 import com.wkr.user.dto.UserUpdateDTO;
 import com.wkr.user.entity.UserInfo;
 import com.wkr.user.service.UserService;
+import com.wkr.user.vo.UserPageVO;
 import com.wkr.user.vo.UserVO;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
@@ -23,6 +25,12 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @RequireRole("ADMIN")
+    @GetMapping("/page")
+    public Result<UserPageVO> page(@ModelAttribute UserPageDTO dto) {
+        return Result.success(userService.page(dto));
+    }
 
     @GetMapping("/{id}")
     public Result<UserVO> detail(@PathVariable("id") Long id){
@@ -45,7 +53,7 @@ public class UserController {
 
     @RequireRole("ADMIN")
     @PostMapping
-    public Result<Long> create(@RequestBody UserCreateDTO dto) {
+    public Result<Long> create(@RequestBody @Valid UserCreateDTO dto) {
 
         Long id = userService.createUser(dto);
         return Result.success(id);

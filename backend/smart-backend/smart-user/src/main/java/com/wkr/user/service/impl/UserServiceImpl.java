@@ -50,6 +50,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserInfo>implements
     @Override
     public Long createUser(UserCreateDTO dto){
 
+        UserInfo exists = getByUsername(dto.getUsername());
+
+        if (exists != null) {
+            throw new BusinessException(409, "用户名已存在");
+        }
+
         UserInfo user = new UserInfo();
 
         user.setUsername(dto.getUsername());
@@ -59,6 +65,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserInfo>implements
                 passwordEncoder.encode(dto.getPassword()));
 
         user.setEmail(dto.getEmail());
+        user.setStatus(0);
+        user.setDeleted(0);
         save(user);
 
         return user.getId();
@@ -103,21 +111,27 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserInfo>implements
         UserInfo user = getById(dto.getId());
 
         if (user == null) {
-            throw new RuntimeException("用户不存在");
+            throw new BusinessException(404, "用户不存在");
         }
 
-        if (dto.getUsername() != null) {
+        // 只有修改用户名时才检查重复
+        if (dto.getUsername() != null
+                && !dto.getUsername().equals(user.getUsername())) {
+
+            UserInfo byUsername = getByUsername(dto.getUsername());
+
+            if (byUsername != null
+                    && !byUsername.getId().equals(user.getId())) {
+                throw new BusinessException(409, "用户名已存在");
+            }
             user.setUsername(dto.getUsername());
         }
-
         if (dto.getEmail() != null) {
             user.setEmail(dto.getEmail());
         }
-
         if (dto.getStatus() != null) {
             user.setStatus(dto.getStatus());
         }
-
         updateById(user);
     }
 
@@ -125,15 +139,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserInfo>implements
     public void delete(Long id) {
 
         if (!UserContext.isAdmin()) {
-            throw new BusinessException(
-                    403,
-                    "无权删除用户"
-            );
+            throw new BusinessException(403, "无权删除用户");
         }
         UserInfo user = getById(id);
 
         if (user == null) {
-            throw new RuntimeException("用户不存在");
+            throw new BusinessException(404, "用户不存在");
         }
         // 逻辑删除
         user.setDeleted(1);
@@ -142,9 +153,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserInfo>implements
 
     @Override
     public Boolean verifyPassword(String username, String rawPassword) {
+
         UserInfo user = getByUsername(username);
 
-        if (user == null) {
+        if (user == null) {return false;}
+
+        // 禁用用户禁止登录
+        if (Integer.valueOf(1).equals(user.getStatus())) {
             return false;
         }
 

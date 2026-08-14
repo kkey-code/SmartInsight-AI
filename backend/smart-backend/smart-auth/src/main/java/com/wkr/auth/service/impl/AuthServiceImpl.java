@@ -29,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
         UserDTO user = userFeignClient.getByUsername(dto.getUsername());
 
         if (user == null) {
-            throw new RuntimeException("用户不存在");
+            throw new BusinessException(401, "用户名或密码错误");
         }
 
         // 2.  通过专门的接口验证密码
@@ -49,6 +49,10 @@ public class AuthServiceImpl implements AuthService {
 
         if (roles == null || roles.isEmpty()) {
             throw new BusinessException(401, "角色信息錯誤，親聯係管理員");
+        }
+
+        if (!user.isActive()) {
+            throw new BusinessException(403, "用户已被禁用");
         }
 
         List<String> roleNames = roles.stream()

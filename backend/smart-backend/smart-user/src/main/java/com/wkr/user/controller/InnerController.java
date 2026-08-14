@@ -23,7 +23,6 @@ import java.util.List;
 public class InnerController {
 
     private final UserService userService;
-
     private final RoleService roleService;
 
     @GetMapping("/{username}")
@@ -35,9 +34,8 @@ public class InnerController {
     }
 
     @GetMapping("/id/{userId}")
-    public UserDTO getById(
-            @PathVariable("userId") Long userId
-    ) {
+    public UserDTO getById(@PathVariable("userId") Long userId) {
+
         UserVO userById = userService.getUserById(userId);
         UserDTO userDTO = new UserDTO();
         BeanUtils.copyProperties(userById, userDTO);
@@ -45,12 +43,13 @@ public class InnerController {
     }
 
     @PostMapping("/verify-password")
-    public Result<Boolean> verifyPassword(
-            @RequestBody PasswordVerifyDTO dto
-    ) {
+    public Result<Boolean> verifyPassword(@RequestBody PasswordVerifyDTO dto) {
         try {
-            Boolean b = userService.verifyPassword(dto.getUsername(), dto.getRawPassword());
+            Boolean b = userService.verifyPassword(
+                    dto.getUsername(),
+                    dto.getRawPassword());
             log.info("result：{}", b);
+
             return Result.success(b);
         } catch (Exception e) {
             return Result.error(500,"验证失败：" + e.getMessage());

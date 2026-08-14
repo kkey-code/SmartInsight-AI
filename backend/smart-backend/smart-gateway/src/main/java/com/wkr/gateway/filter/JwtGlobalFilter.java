@@ -6,12 +6,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
@@ -113,13 +116,26 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
         }
     }
 
-    private Mono<Void> unauthorized(
-            ServerWebExchange exchange
-    ) {
-        exchange.getResponse()
-                .setStatusCode(HttpStatus.UNAUTHORIZED);
+    private Mono<Void> unauthorized(ServerWebExchange exchange) {
 
-        return exchange.getResponse().setComplete();
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+        exchange.getResponse()
+                .getHeaders()
+                .setContentType(MediaType.APPLICATION_JSON);
+
+        String body = """
+            {
+                "code": 401,
+                "message": "未登录或登录已过期",
+                "data": null
+            }
+            """;
+
+        DataBuffer buffer = exchange.getResponse()
+                .bufferFactory()
+                .wrap(body.getBytes(StandardCharsets.UTF_8));
+
+        return exchange.getResponse().writeWith(Mono.just(buffer));
     }
 
     @Override
