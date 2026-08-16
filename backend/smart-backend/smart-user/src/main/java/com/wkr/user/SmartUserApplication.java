@@ -9,7 +9,10 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableDiscoveryClient
 @SpringBootApplication
 @MapperScan("com.wkr.user.mapper")
-@ComponentScan({"com.wkr.user","com.wkr.web","com.wkr.apiuser"})
+@ComponentScan({"com.wkr.user",
+                "com.wkr.web",
+                "com.wkr.apiuser",
+                })
 public class SmartUserApplication {
 
     public static void main(String[] args) {

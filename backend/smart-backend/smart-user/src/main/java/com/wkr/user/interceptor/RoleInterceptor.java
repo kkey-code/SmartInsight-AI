@@ -1,7 +1,7 @@
 package com.wkr.user.interceptor;
 
 import com.wkr.user.annotation.RequireRole;
-import com.wkr.user.context.UserContext;
+import com.wkr.web.context.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;

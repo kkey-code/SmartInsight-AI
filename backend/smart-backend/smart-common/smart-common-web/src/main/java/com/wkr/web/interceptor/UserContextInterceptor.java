@@ -1,6 +1,6 @@
-package com.wkr.user.interceptor;
+package com.wkr.web.interceptor;
 
-import com.wkr.user.context.UserContext;
+import com.wkr.web.context.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;

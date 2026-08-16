@@ -2,7 +2,6 @@ package com.wkr.user.controller;
 
 import com.wkr.core.result.Result;
 import com.wkr.user.annotation.RequireRole;
-import com.wkr.user.context.UserContext;
 import com.wkr.user.dto.UserCreateDTO;
 import com.wkr.user.dto.UserPageDTO;
 import com.wkr.user.dto.UserUpdateDTO;
@@ -10,6 +9,7 @@ import com.wkr.user.entity.UserInfo;
 import com.wkr.user.service.UserService;
 import com.wkr.user.vo.UserPageVO;
 import com.wkr.user.vo.UserVO;
+import com.wkr.web.context.UserContext;
 import jakarta.validation.Valid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

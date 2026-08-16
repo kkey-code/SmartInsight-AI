@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wkr.core.exception.BusinessException;
-import com.wkr.user.context.UserContext;
 import com.wkr.user.dto.UserCreateDTO;
 import com.wkr.user.dto.UserPageDTO;
 import com.wkr.user.dto.UserUpdateDTO;
@@ -13,12 +12,15 @@ import com.wkr.user.mapper.UserMapper;
 import com.wkr.user.service.UserService;
 import com.wkr.user.vo.UserPageVO;
 import com.wkr.user.vo.UserVO;
+import com.wkr.web.context.UserContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, UserInfo>implements UserService {
 
@@ -156,14 +158,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserInfo>implements
 
         UserInfo user = getByUsername(username);
 
-        if (user == null) {return false;}
-
-        // 禁用用户禁止登录
-        if (Integer.valueOf(1).equals(user.getStatus())) {
+        if (user == null) {
+            log.warn("用户不存在，username={}", username);
             return false;
         }
 
-        return passwordEncoder.matches(
+//        // 禁用用户禁止登录
+//        if (Integer.valueOf(1).equals(user.getStatus())) {
+//            log.warn("用户已禁用，username={}", username);
+//            return false;
+//        }
+
+        // 加密前
+//        log.info("密码加密前：username={}, rawPassword={}", username, rawPassword);
+//        String encodedPassword = passwordEncoder.encode(rawPassword);
+//        log.info("BCrypt密码：{}", encodedPassword);
+
+        // 数据库中的加密密码
+//        log.info("密码加密后：username={}, encodedPassword={}", username, user.getPassword());
+
+        return passwordEncoder. matches(
                 rawPassword,
                 user.getPassword()
         );

@@ -2,7 +2,7 @@ package com.wkr.user.config;
 
 import com.wkr.user.interceptor.InternalAuthInterceptor;
 import com.wkr.user.interceptor.RoleInterceptor;
-import com.wkr.user.interceptor.UserContextInterceptor;
+import com.wkr.web.interceptor.UserContextInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

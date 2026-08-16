@@ -17,7 +17,7 @@ spring:
         - id: smart-user
           uri: lb://smart-user
           predicates:
-            - Path=/user/**
+            - Path=/user/**,/role/**
         # 认证服务路由
         - id: smart-auth
           uri: lb://smart-auth
