@@ -21,6 +21,33 @@
         <module>smart-common-core</module>
         <module>smart-common-web</module>
         <module>smart-common-db</module>
+        <module>smart-common-mq</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Smart Common 模块版本管理 -->
+            <dependency>
+                <groupId>com.smart.ai</groupId>
+                <artifactId>smart-common-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.smart.ai</groupId>
+                <artifactId>smart-common-web</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.smart.ai</groupId>
+                <artifactId>smart-common-db</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.smart.ai</groupId>
+                <artifactId>smart-common-mq</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>

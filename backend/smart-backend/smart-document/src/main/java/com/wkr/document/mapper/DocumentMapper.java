@@ -6,4 +6,13 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface DocumentMapper extends BaseMapper<Document> {
+
+    int updateProcessSuccess(
+            Long id
+    );
+
+    int updateProcessFailed(
+            Long id,
+            String errorMessage
+    );
 }

@@ -103,6 +103,11 @@
                 <artifactId>smart-api-auth</artifactId>
                 <version>${smart.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.smart.ai</groupId>
+                <artifactId>smart-api-document</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- ==================== 第三方依赖 ==================== -->
             <!-- MyBatis Plus -->

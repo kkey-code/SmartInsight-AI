@@ -37,3 +37,20 @@ ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE document_info
     ADD COLUMN file_path VARCHAR(500) NULL COMMENT '文件存储路径';
+    
+-- 第三阶段：创建 document_content 表
+CREATE TABLE document_content
+(
+    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',
+    document_id BIGINT NOT NULL COMMENT '文档ID',
+    content LONGTEXT COMMENT '文档内容',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT='文档内容表' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 第四阶段：为 document_info 表增加 task_id 字段
+ALTER TABLE document_info
+    ADD COLUMN task_id VARCHAR(64) NULL COMMENT '处理任务ID';
+    
+ALTER TABLE document_content
+ADD UNIQUE KEY uk_document_id(document_id);

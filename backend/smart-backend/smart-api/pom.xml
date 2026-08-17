@@ -20,6 +20,7 @@
     <modules>
         <module>smart-api-user</module>
         <module>smart-api-auth</module>
+        <module>smart-api-document</module>
     </modules>
 
 </project>
