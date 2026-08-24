@@ -6,6 +6,7 @@ import com.wkr.document.dto.DocumentCreateDTO;
 import com.wkr.document.dto.DocumentPageDTO;
 import com.wkr.document.dto.DocumentUpdateDTO;
 import com.wkr.document.service.DocumentService;
+import com.wkr.document.vo.DocumentContentVO;
 import com.wkr.document.vo.DocumentDownloadVO;
 import com.wkr.document.vo.DocumentVO;
 import jakarta.validation.Valid;
@@ -103,6 +104,15 @@ public class DocumentController {
                 .body(download.getResource());
     }
 
+    @GetMapping("/{id}/content")
+    public Result<DocumentContentVO> getContent(
+            @PathVariable Long id) {
+
+        return Result.success(
+                documentService.getContent(id)
+        );
+    }
+
     private String sanitizeFileName(String fileName) {
 
         if (fileName == null || fileName.isBlank()) {
@@ -132,5 +142,4 @@ public class DocumentController {
             return MediaType.APPLICATION_OCTET_STREAM;
         }
     }
-
 }

@@ -5,15 +5,23 @@
 
     <update id="updateProcessSuccess">
         update document_info
-        set status = 2, error_message = null, update_time = now()
+        set
+            status = 2,
+            error_message = null,
+            update_time = now()
         where id = #{id}
+        AND task_id = #{taskId}
         and status = 1
     </update>
 
     <update id="updateProcessFailed">
         update document_info
-        set status = 3, error_message = #{errorMessage}, update_time = now()
+        set
+            status = 3,
+            error_message = #{errorMessage},
+            update_time = now()
         where id = #{id}
-        and status = 1
+          and status = 1
+          AND task_id = #{taskId}
     </update>
 </mapper>

@@ -36,9 +36,7 @@ public class DocumentProcessResultConsumer {
         );
 
         Document document =
-                documentMapper.selectById(
-                        message.getDocumentId()
-                );
+                documentMapper.selectById(message.getDocumentId());
 
         if(document == null){
 
@@ -50,24 +48,28 @@ public class DocumentProcessResultConsumer {
             return;
         }
 
+        if (document.getTaskId() == null ||
+                !document.getTaskId().equals(message.getTaskId())) {
+
+            log.warn(
+                    "Ignore stale document process result, documentId={}, " +
+                            "receivedTaskId={}, currentTaskId={}",
+                    message.getDocumentId(),
+                    message.getTaskId(),
+                    document.getTaskId()
+            );
+            return;
+        }
+
         if(message.getStatus() ==
                 DocumentProcessResultMessage.ProcessStatus.SUCCESS
         ){
-            document.setStatus(
-                    DocumentStatus.READY.getCode()
-            );
+            document.setStatus(DocumentStatus.READY.getCode());
             document.setErrorMessage(null);
-
         }else{
-            document.setStatus(
-                    DocumentStatus.FAILED.getCode()
-            );
-
-            document.setErrorMessage(
-                    message.getErrorMessage()
-            );
+            document.setStatus(DocumentStatus.FAILED.getCode());
+            document.setErrorMessage(message.getErrorMessage());
         }
-
         documentMapper.updateById(document);
 
         log.info(

@@ -6,6 +6,7 @@ import com.wkr.document.dto.DocumentCreateDTO;
 import com.wkr.document.dto.DocumentPageDTO;
 import com.wkr.document.dto.DocumentUpdateDTO;
 import com.wkr.document.entity.Document;
+import com.wkr.document.vo.DocumentContentVO;
 import com.wkr.document.vo.DocumentDownloadVO;
 import com.wkr.document.vo.DocumentVO;
 import org.springframework.core.io.Resource;
@@ -26,4 +27,6 @@ public interface DocumentService extends IService<Document> {
     DocumentVO upload(MultipartFile file);
 
     DocumentDownloadVO download(Long id);
+
+    DocumentContentVO getContent(Long documentId);
 }

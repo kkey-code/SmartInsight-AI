@@ -55,7 +55,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-
         <!-- Nacos 服务注册发现 -->
         <dependency>
             <groupId>com.alibaba.cloud</groupId>

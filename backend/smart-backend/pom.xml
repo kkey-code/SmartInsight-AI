@@ -21,7 +21,7 @@
         <module>smart-auth</module>
         <module>smart-user</module>
         <module>smart-document</module>
-        <module>smart-ai-service</module>
+<!--        <module>smart-ai</module>-->
         <module>smart-worker</module>
     </modules>
 

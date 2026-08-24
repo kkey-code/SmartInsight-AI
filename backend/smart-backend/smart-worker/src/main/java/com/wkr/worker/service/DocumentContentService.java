@@ -23,19 +23,24 @@ public class DocumentContentService {
     ){
 
         String sql = """
-                INSERT INTO document_content
-                (
-                    document_id,
-                    content,
-                    create_time
-                )
-                VALUES
-                (
-                    ?,
-                    ?,
-                    NOW()
-                )
-                """;
+            INSERT INTO document_content
+            (
+                document_id,
+                content,
+                create_time,
+                update_time
+            )
+            VALUES
+            (
+                ?,
+                ?,
+                NOW(),
+                NOW()
+            )
+            ON DUPLICATE KEY UPDATE
+                content = VALUES(content),
+                update_time = NOW()
+            """;
 
         jdbcTemplate.update(
                 sql,

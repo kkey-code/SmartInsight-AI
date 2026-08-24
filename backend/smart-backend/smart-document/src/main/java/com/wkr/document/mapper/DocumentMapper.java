@@ -8,11 +8,13 @@ import org.apache.ibatis.annotations.Mapper;
 public interface DocumentMapper extends BaseMapper<Document> {
 
     int updateProcessSuccess(
-            Long id
+            Long id,
+            String taskId
     );
 
     int updateProcessFailed(
             Long id,
+            String taskId,
             String errorMessage
     );
 }

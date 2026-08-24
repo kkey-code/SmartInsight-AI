@@ -31,6 +31,8 @@ public class Document {
 
     private Integer status;
 
+    private String taskId;
+
     private String errorMessage;
 
     private LocalDateTime createTime;

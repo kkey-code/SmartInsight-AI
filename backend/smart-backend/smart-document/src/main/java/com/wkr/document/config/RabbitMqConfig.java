@@ -47,39 +47,6 @@ public class RabbitMqConfig {
     }
 
     @Bean
-    public DirectExchange documentResultExchange(){
-
-        return new DirectExchange(
-                DocumentMqConstants.RESULT_EXCHANGE,
-                true,
-                false
-        );
-    }
-
-    @Bean
-    public Queue documentResultQueue(){
-
-        return new Queue(
-                DocumentMqConstants.RESULT_QUEUE,
-                true
-        );
-    }
-
-    @Bean
-    public Binding documentResultBinding(
-            Queue documentResultQueue,
-            DirectExchange documentResultExchange
-    ){
-        return BindingBuilder
-                .bind(documentResultQueue)
-                .to(documentResultExchange)
-                .with(
-                        DocumentMqConstants.RESULT_ROUTING_KEY
-                );
-
-    }
-
-    @Bean
     public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }

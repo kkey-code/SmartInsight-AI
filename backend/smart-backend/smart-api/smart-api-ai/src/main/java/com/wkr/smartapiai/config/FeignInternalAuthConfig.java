@@ -1,4 +1,4 @@
-package com.wkr.apiuser.config;
+package com.wkr.smartapiai.config;
 
 import com.wkr.core.util.InternalTokenUtil;
 import feign.RequestInterceptor;

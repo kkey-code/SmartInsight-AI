@@ -1,5 +1,6 @@
 package com.wkr.document.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wkr.core.exception.BusinessException;
@@ -7,11 +8,14 @@ import com.wkr.document.dto.DocumentCreateDTO;
 import com.wkr.document.dto.DocumentPageDTO;
 import com.wkr.document.dto.DocumentUpdateDTO;
 import com.wkr.document.entity.Document;
+import com.wkr.document.entity.DocumentContent;
 import com.wkr.document.enums.DocumentStatus;
+import com.wkr.document.mapper.DocumentContentMapper;
 import com.wkr.document.mapper.DocumentMapper;
 import com.wkr.document.mq.DocumentProcessProducer;
 import com.wkr.document.service.DocumentService;
 import com.wkr.document.service.FileStorage;
+import com.wkr.document.vo.DocumentContentVO;
 import com.wkr.document.vo.DocumentDownloadVO;
 import com.wkr.document.vo.DocumentVO;
 import com.wkr.web.context.UserContext;
@@ -33,13 +37,16 @@ public class DocumentServiceImpl
 
     private final FileStorage fileStorage;
 
+    private final DocumentContentMapper documentContentMapper;
+
     private final DocumentProcessProducer documentProcessProducer;
 
     public DocumentServiceImpl(
-            FileStorage fileStorage,
+            FileStorage fileStorage, DocumentContentMapper documentContentMapper,
             DocumentProcessProducer documentProcessProducer
     ) {
         this.fileStorage = fileStorage;
+        this.documentContentMapper = documentContentMapper;
         this.documentProcessProducer = documentProcessProducer;
     }
 
@@ -162,14 +169,9 @@ public class DocumentServiceImpl
     @Override
     public DocumentVO upload(MultipartFile file) {
 
-        // ==============================
-        // 1. 参数检查
-        // ==============================
-
         if (file == null || file.isEmpty()) {
             throw new BusinessException(400, "上传文件不能为空");
         }
-
         Long userId = requireUserId();
 
         String originalFilename = file.getOriginalFilename();
@@ -181,7 +183,6 @@ public class DocumentServiceImpl
         // ==============================
         // 2. 清理原始文件名
         // ==============================
-
         String fileName =
                 originalFilename.replace("\\", "/");
 
@@ -194,12 +195,8 @@ public class DocumentServiceImpl
 
         if (fileName.isBlank() || ".".equals(fileName) || "..".equals(fileName)) {
 
-            throw new BusinessException(400, "非法文件名"
-            );
+            throw new BusinessException(400, "非法文件名");
         }
-        // ==============================
-        // 3. 创建 Document
-        // ==============================
         Document document = new Document();
 
         document.setOwnerId(userId);
@@ -223,7 +220,6 @@ public class DocumentServiceImpl
         // ==============================
         // 4. 生成存储路径
         // ==============================
-
         String extension = "";
 
         int dotIndex = fileName.lastIndexOf('.');
@@ -265,11 +261,9 @@ public class DocumentServiceImpl
                     && !storageKey.isBlank()) {
 
                 try {
-
                     fileStorage.delete(storageKey);
 
                 } catch (Exception deleteException) {
-
                     log.error(
                             "上传失败后的文件清理失败, documentId={}, storageKey={}",
                             document.getId(),
@@ -280,18 +274,9 @@ public class DocumentServiceImpl
             }
 
             // 更新失败状态
-            document.setStatus(
-                    DocumentStatus.FAILED.getCode()
-            );
-
-            document.setErrorMessage(
-                    "文件上传失败"
-            );
-
-            document.setUpdateTime(
-                    LocalDateTime.now()
-            );
-
+            document.setStatus(DocumentStatus.FAILED.getCode());
+            document.setErrorMessage("文件上传失败");
+            document.setUpdateTime(LocalDateTime.now());
             try {
                 updateById(document);
 
@@ -302,7 +287,6 @@ public class DocumentServiceImpl
                         updateException
                 );
             }
-
             throw new BusinessException(500, "文件上传失败");
         }
         // ==============================
@@ -321,6 +305,9 @@ public class DocumentServiceImpl
                             document.getOwnerId(),
                             document.getStorageKey()
                     );
+            document.setTaskId(taskId);
+            document.setUpdateTime(LocalDateTime.now());
+            updateById(document);
 
             log.info(
                     "文档处理任务已发送, documentId={}, taskId={}",
@@ -346,9 +333,6 @@ public class DocumentServiceImpl
 
             throw new BusinessException(500, "文档处理任务发送失败");
         }
-        // ==============================
-        // 7. 返回 PROCESSING
-        // ==============================
         return toVO(document);
     }
 
@@ -388,12 +372,53 @@ public class DocumentServiceImpl
         );
     }
 
+    @Override
+    public DocumentContentVO getContent(Long documentId) {
+
+        Document document = getById(documentId);
+
+        if (document == null) {
+            throw new BusinessException(404, "文档不存在");
+        }
+        checkPermission(document);
+
+        Integer status = document.getStatus();
+        if (status == null) {
+            throw new BusinessException(409, "文档状态异常");
+        }
+        if (status == 1) {
+            throw new BusinessException(409, "文档正在解析");
+        }
+
+        if (status == 3) {
+            String message = document.getErrorMessage();
+
+            throw new BusinessException(
+                    409,
+                    message == null || message.isBlank()
+                            ? "文档解析失败" : "文档解析失败：" + message
+            );
+        }
+        DocumentContent content =
+                documentContentMapper.selectOne(
+                        Wrappers.<DocumentContent>lambdaQuery()
+                                .eq(DocumentContent::getDocumentId,
+                                        documentId
+                                )
+                );
+        if (content == null) {
+            throw new BusinessException(404, "文档内容不存在");
+        }
+        DocumentContentVO vo = new DocumentContentVO();
+        BeanUtils.copyProperties(content, vo);
+
+        return vo;
+    }
+
     private void checkPermission(Document document) {
 
         Long userId = requireUserId();
-        if (!UserContext.isAdmin()
-                && !userId.equals(
-                document.getOwnerId()
+        if (!UserContext.isAdmin() && !userId.equals(document.getOwnerId()
         )) {
             throw new BusinessException(403, "无权操作该文档");
         }
