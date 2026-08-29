@@ -16,10 +16,8 @@ public class DocumentProcessResultProducer {
     private final RabbitTemplate rabbitTemplate;
 
 
-    public void success(
-            Long documentId,
-            String taskId
-    ){
+    public void success(Long documentId, String taskId)
+    {
         send(
                 new DocumentProcessResultMessage(
                         documentId,

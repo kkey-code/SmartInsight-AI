@@ -1,4 +1,4 @@
-package com.wkr.document.mq.consumer;
+package com.wkr.document.mq;
 
 
 import com.wkr.document.entity.Document;
@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
-
 
 
 @Slf4j
@@ -29,7 +28,10 @@ public class DocumentProcessResultConsumer {
             DocumentProcessResultMessage message
     ){
         log.info(
-                "Receive document process result, documentId={}, taskId={}, status={}",
+                "Receive document process result, " +
+                        "documentId={}, " +
+                        "taskId={}, " +
+                        "status={}",
                 message.getDocumentId(),
                 message.getTaskId(),
                 message.getStatus()
@@ -39,21 +41,21 @@ public class DocumentProcessResultConsumer {
                 documentMapper.selectById(message.getDocumentId());
 
         if(document == null){
-
             log.warn(
                     "Document not found, id={}",
                     message.getDocumentId()
             );
-
             return;
         }
 
         if (document.getTaskId() == null ||
-                !document.getTaskId().equals(message.getTaskId())) {
-
+                !document.getTaskId().equals(message.getTaskId())
+        ) {
             log.warn(
-                    "Ignore stale document process result, documentId={}, " +
-                            "receivedTaskId={}, currentTaskId={}",
+                    "Ignore stale document process result, " +
+                            "documentId={}, " +
+                            "receivedTaskId={}, " +
+                            "currentTaskId={}",
                     message.getDocumentId(),
                     message.getTaskId(),
                     document.getTaskId()

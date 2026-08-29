@@ -24,8 +24,8 @@ spring:
           predicates:
             - Path=/auth/**
         # AI 服务路由
-        - id: smart-ai
-          uri: lb://smart-ai
+        - id: smart-ai-python
+          uri: lb://smart-ai-python
           predicates:
             - Path=/ai/**
         # 文档服务路由

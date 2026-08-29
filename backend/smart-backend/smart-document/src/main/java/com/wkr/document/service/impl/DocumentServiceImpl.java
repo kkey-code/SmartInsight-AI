@@ -36,13 +36,12 @@ public class DocumentServiceImpl
         implements DocumentService {
 
     private final FileStorage fileStorage;
-
     private final DocumentContentMapper documentContentMapper;
-
     private final DocumentProcessProducer documentProcessProducer;
 
     public DocumentServiceImpl(
-            FileStorage fileStorage, DocumentContentMapper documentContentMapper,
+            FileStorage fileStorage,
+            DocumentContentMapper documentContentMapper,
             DocumentProcessProducer documentProcessProducer
     ) {
         this.fileStorage = fileStorage;
@@ -90,10 +89,7 @@ public class DocumentServiceImpl
         Long userId = requireUserId();
 
         Page<Document> page =
-                new Page<>(
-                        dto.getCurrent(),
-                        dto.getSize()
-                );
+                new Page<>(dto.getCurrent(), dto.getSize());
 
         if (UserContext.isAdmin()) {
             lambdaQuery()
@@ -222,11 +218,11 @@ public class DocumentServiceImpl
         // ==============================
         String extension = "";
 
-        int dotIndex = fileName.lastIndexOf('.');
+        int lastIndex = fileName.lastIndexOf('.');
 
-        if (dotIndex > 0 && dotIndex < fileName.length() - 1) {
+        if (lastIndex > 0 && lastIndex < fileName.length() - 1) {
 
-            extension = fileName.substring(dotIndex);
+            extension = fileName.substring(lastIndex);
         }
 
         String storedFileName = UUID.randomUUID() + extension;
@@ -246,10 +242,9 @@ public class DocumentServiceImpl
 
             document.setStorageKey(storageKey);
             document.setUpdateTime(LocalDateTime.now());
-
             updateById(document);
-        } catch (Exception e) {
 
+        } catch (Exception e) {
             log.error(
                     "文件上传失败, documentId={}",
                     document.getId(),
@@ -257,8 +252,7 @@ public class DocumentServiceImpl
             );
 
             // 清理已经上传的文件
-            if (storageKey != null
-                    && !storageKey.isBlank()) {
+            if (storageKey != null && !storageKey.isBlank()) {
 
                 try {
                     fileStorage.delete(storageKey);
@@ -415,6 +409,19 @@ public class DocumentServiceImpl
         return vo;
     }
 
+    /**
+     * 检查当前用户是否有权限操作指定文档
+     *
+     * <p>权限规则：</p>
+     * <ul>
+     *     <li>管理员（Admin）可以操作任何文档</li>
+     *     <li>普通用户只能操作自己创建的文档（ownerId = 当前用户ID）</li>
+     * </ul>
+     *
+     * @param document 待检查的文档对象，不能为 null
+     * @throws BusinessException 如果未登录抛出 401 异常（由 requireUserId 抛出）
+     * @throws BusinessException 如果无权限抛出 403 异常（无权操作该文档）
+     */
     private void checkPermission(Document document) {
 
         Long userId = requireUserId();
@@ -424,6 +431,19 @@ public class DocumentServiceImpl
         }
     }
 
+    /**
+     * 获取当前登录用户的ID，若未登录则抛出异常
+     *
+     * <p>该方法在需要强制登录校验的场景下使用，如：</p>
+     * <ul>
+     *     <li>上传文档</li>
+     *     <li>删除文档</li>
+     *     <li>文档权限校验</li>
+     * </ul>
+     *
+     * @return 当前登录用户的ID，保证不为 null
+     * @throws BusinessException 如果当前用户未登录，抛出 401 未授权异常
+     */
     private Long requireUserId() {
 
         Long userId = UserContext.getUserId();

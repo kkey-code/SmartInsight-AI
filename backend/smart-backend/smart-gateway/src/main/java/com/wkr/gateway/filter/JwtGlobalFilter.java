@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -25,6 +26,12 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
     private static final String USER_ID_HEADER = "X-User-Id";
     private static final String USERNAME_HEADER = "X-Username";
     private static final String USER_ROLES_HEADER = "X-User-Roles";
+
+    private static final Set<String> WHITELIST = Set.of(
+            "/auth/login",
+            "/auth/register",
+            "/actuator/health"
+    );
 
     @Override
     public Mono<Void> filter(
@@ -36,10 +43,11 @@ public class JwtGlobalFilter implements GlobalFilter, Ordered {
                 .getURI()
                 .getPath();
 
-        // 登录接口放行
-        if ("/auth/login".equals(path)) {
+        // 部分接口放行
+        if (WHITELIST.contains(path)) {
             return chain.filter(exchange);
         }
+
         // 获取 JWT 令牌
         String authorization = exchange.getRequest()
                 .getHeaders()

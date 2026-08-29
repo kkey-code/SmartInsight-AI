@@ -1,16 +1,80 @@
-# IDEA
+# ==================== IDE ====================
 .idea/
 *.iml
+.vscode/
+.settings/
+.classpath
+.project
 
-# Maven
+# ==================== Maven ====================
 target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
 
-# logs
+# ==================== 日志 ====================
 *.log
+logs/
 
-# OS
+# ==================== 操作系统 ====================
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Spring
+# ==================== 本地配置文件 ====================
 application-local.yml
+application-*.local.yml
+*.local.yml
+bootstrap-local.yml
+.env
+*.secret
+
+# ==================== Docker ====================
+*.pid
+docker-compose.override.yml
+
+# ==================== Python ====================
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+pip-log.txt
+pip-delete-this-directory.txt
+request.json
+
+# ==================== Node.js ====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ==================== 前端 ====================
+dist/
+build/
+.vuepress/dist/
+.next/
+out/
+
+# ==================== 其他 ====================
+*.swp
+*.swo
+*~
+.terraform/
+*.bak
+*.tmp

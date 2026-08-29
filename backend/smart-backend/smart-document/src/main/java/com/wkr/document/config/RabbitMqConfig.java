@@ -12,42 +12,68 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMqConfig {
 
+    // ========== 处理流程 ==========
     @Bean
     public DirectExchange processExchange() {
-        return new DirectExchange(DocumentMqConstants.PROCESS_EXCHANGE, true, false);
+        return createDirectExchange(DocumentMqConstants.PROCESS_EXCHANGE);
     }
 
     @Bean
     public Queue processQueue() {
-        return new Queue(DocumentMqConstants.PROCESS_QUEUE, true);
+        return createQueue(DocumentMqConstants.PROCESS_QUEUE);
     }
 
     @Bean
-    public Binding processBinding(Queue processQueue, DirectExchange processExchange) {
-        return BindingBuilder.bind(processQueue)
-                .to(processExchange)
-                .with(DocumentMqConstants.PROCESS_ROUTING_KEY);
+    public Binding processBinding(Queue processQueue, DirectExchange processExchange)
+    {
+        return createBinding(
+                    processQueue,
+                    processExchange,
+                    DocumentMqConstants.PROCESS_ROUTING_KEY
+        );
     }
 
+    // ========== 结果流程 ==========
     @Bean
     public DirectExchange resultExchange() {
-        return new DirectExchange(DocumentMqConstants.RESULT_EXCHANGE, true, false);
+        return createDirectExchange(DocumentMqConstants.RESULT_EXCHANGE);
     }
 
     @Bean
     public Queue resultQueue() {
-        return new Queue(DocumentMqConstants.RESULT_QUEUE, true);
+        return createQueue(DocumentMqConstants.RESULT_QUEUE);
     }
 
     @Bean
     public Binding resultBinding(Queue resultQueue, DirectExchange resultExchange) {
-        return BindingBuilder.bind(resultQueue)
-                .to(resultExchange)
-                .with(DocumentMqConstants.RESULT_ROUTING_KEY);
+        return createBinding(
+                    resultQueue,
+                    resultExchange,
+                    DocumentMqConstants.RESULT_ROUTING_KEY
+        );
     }
 
+    //把消息体转换成 JSON 格式
     @Bean
     public Jackson2JsonMessageConverter jackson2JsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
+    }
+
+    // ========== 抽取的公共方法 ==========
+    private DirectExchange createDirectExchange(String name)
+    {
+        return new DirectExchange(name, true, false);
+    }
+
+    private Queue createQueue(String name)
+    {
+        return new Queue(name, true);
+    }
+
+    private Binding createBinding(Queue queue, DirectExchange exchange, String routingKey)
+    {
+        return BindingBuilder.bind(queue)
+                .to(exchange)
+                .with(routingKey);
     }
 }

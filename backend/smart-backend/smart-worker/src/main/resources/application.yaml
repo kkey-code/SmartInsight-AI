@@ -22,6 +22,10 @@ spring:
     username: guest
     password: guest
     virtual-host: /
+    listener:
+      simple:
+        acknowledge-mode: auto
+        prefetch: 1
 
 mybatis-plus:
   configuration:

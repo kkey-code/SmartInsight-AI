@@ -1,5 +1,5 @@
-version: '3'
 services:
+  # ==================== 注册中心 ====================
   nacos:
     image: nacos/nacos-server:v2.3.2
     container_name: smart-nacos
@@ -10,3 +10,74 @@ services:
     ports:
       - "8848:8848"
       - "9848:9848"
+    restart: unless-stopped
+    networks:
+      - smart-network
+
+  # ==================== 消息队列 ====================
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: smart-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+    networks:
+      - smart-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ==================== 本地 AI 模型 ====================
+  ollama:
+    image: ollama/ollama:latest
+    container_name: smart-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    networks:
+      - smart-network
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+        reservations:
+          memory: 4G
+
+  # ==================== Ollama Web 管理界面 ====================
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: smart-webui
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    volumes:
+      - webui_data:/app/backend/data
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    networks:
+      - smart-network
+
+volumes:
+  rabbitmq_data:
+    driver: local
+  ollama_data:
+    driver: local
+  webui_data:
+    driver: local
+
+networks:
+  smart-network:
+    driver: bridge

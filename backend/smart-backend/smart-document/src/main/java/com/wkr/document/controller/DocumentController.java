@@ -59,34 +59,28 @@ public class DocumentController {
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(
-            @PathVariable Long id) {
+    public Result<Void> delete(@PathVariable("id") Long id) {
 
         documentService.delete(id);
-
         return Result.success(null);
     }
     @PostMapping("/upload")
     public Result<DocumentVO> upload(
             @RequestParam("file") MultipartFile file
     ) {
-        return Result.success(
-                documentService.upload(file)
-        );
+        return Result.success(documentService.upload(file));
     }
 
     @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> download(@PathVariable Long id) {
+    public ResponseEntity<Resource> download(@PathVariable("id") Long id) {
 
-        DocumentDownloadVO download =
-                documentService.download(id);
+        DocumentDownloadVO download = documentService.download(id);
 
-        String fileName =
-                sanitizeFileName(download.getFileName());
+        String fileName = sanitizeFileName(download.getFileName());
 
         MediaType mediaType =
                 resolveMediaType(download.getFileType());
-
+        //文件下载时处理中文乱码
         String encodedFileName =
                 URLEncoder
                         .encode(fileName, StandardCharsets.UTF_8)
@@ -106,7 +100,7 @@ public class DocumentController {
 
     @GetMapping("/{id}/content")
     public Result<DocumentContentVO> getContent(
-            @PathVariable Long id) {
+            @PathVariable("id") Long id) {
 
         return Result.success(
                 documentService.getContent(id)
